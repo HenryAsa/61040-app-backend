@@ -41,7 +41,7 @@ export default class LocationConcept {
   async getLocationById(_id: ObjectId) {
     const location = await this.locations.readOne({ _id });
     if (location === null) {
-      throw new NotFoundError(`Location not found!`);
+      throw new LocationNotFoundInDBError(_id);
     }
     return location;
     // return this.sanitizeUser(location);
@@ -50,7 +50,7 @@ export default class LocationConcept {
   async getLocationByAddress(street: string, city: string, state: string, country: string, zip_code: number) {
     const location = await this.locations.readOne({ street, city, state, country, zip_code });
     if (location === null) {
-      throw new NotFoundError(`Location not found!`);
+      throw new NotFoundError(`Location not found in the database!`);
     }
     return location;
     // return this.sanitizeUser(user);
@@ -138,7 +138,7 @@ export default class LocationConcept {
 
 export class LocationNotFoundInDBError extends NotAllowedError {
   constructor(public readonly location: ObjectId | string) {
-    super(`${location} does not exist!`);
+    super(`${location} does not exist in the Database!`);
   }
 }
 

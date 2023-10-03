@@ -156,6 +156,13 @@ class Routes {
     return await Location.create(street, city, state, country, zip_code);
   }
 
+  @Router.get("/locations/:zip_code")
+  async getLocationsInZipCode(session: WebSessionDoc, zip_code: number) {
+    // const user = WebSession.getUser(session);
+    // await Location.isAuthor(user, _id);
+    return Location.getLocationsInZipCode(zip_code);
+  }
+
   @Router.delete("/locations/:_id")
   async deleteLocation(session: WebSessionDoc, _id: ObjectId) {
     // const user = WebSession.getUser(session);

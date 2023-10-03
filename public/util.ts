@@ -81,13 +81,19 @@ const operations: operation[] = [
     name: "Get Locations (empty for all)",
     endpoint: "/api/locations",
     method: "GET",
-    fields: { id: "input" },
+    fields: {},
   },
   {
     name: "Create Location",
     endpoint: "/api/locations",
     method: "POST",
     fields: { street: "input", city: "input", state: "input", country: "input", zip_code: "input" },
+  },
+  {
+    name: "Get Locations In Zip Code",
+    endpoint: "/api/locations/:zip_code",
+    method: "GET",
+    fields: { zip_code: "input" },
   },
   {
     name: "Delete Location",
