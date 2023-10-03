@@ -2,10 +2,12 @@ import { ObjectId } from "mongodb";
 
 import { Router, getExpressRouter } from "./framework/router";
 
-import { Friend, Post, User, WebSession } from "./app";
+import { Friend, Post, User, WebSession, Location } from "./app";
 import { PostDoc, PostOptions } from "./concepts/post";
 import { UserDoc } from "./concepts/user";
 import { WebSessionDoc } from "./concepts/websession";
+import { LocationDoc } from "./concepts/location";
+
 import Responses from "./responses";
 
 class Routes {
@@ -14,6 +16,8 @@ class Routes {
     const user = WebSession.getUser(session);
     return await User.getUserById(user);
   }
+
+  //// USERS ////
 
   @Router.get("/users")
   async getUsers() {
@@ -57,6 +61,8 @@ class Routes {
     return { msg: "Logged out!" };
   }
 
+  //// POSTS ////
+
   @Router.get("/posts")
   async getPosts(author?: string) {
     let posts;
@@ -89,6 +95,8 @@ class Routes {
     await Post.isAuthor(user, _id);
     return Post.delete(_id);
   }
+
+  //// FRIENDS ////
 
   @Router.get("/friends")
   async getFriends(session: WebSessionDoc) {
@@ -135,6 +143,24 @@ class Routes {
     const user = WebSession.getUser(session);
     const fromId = (await User.getUserByUsername(from))._id;
     return await Friend.rejectRequest(fromId, user);
+  }
+
+  //// LOCATIONS ////
+  @Router.get("/locations")
+  async getLocations() {
+    return await Location.getLocations();
+  }
+
+  @Router.post("/locations")
+  async createLocation(street: string, city: string, state: string, country: string, zip_code: number) {
+    return await Location.create(street, city, state, country, zip_code);
+  }
+
+  @Router.delete("/locations/:_id")
+  async deleteLocation(session: WebSessionDoc, _id: ObjectId) {
+    // const user = WebSession.getUser(session);
+    // await Location.isAuthor(user, _id);
+    return Location.delete(_id);
   }
 }
 

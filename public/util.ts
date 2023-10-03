@@ -77,6 +77,24 @@ const operations: operation[] = [
     method: "DELETE",
     fields: { id: "input" },
   },
+  {
+    name: "Get Locations (empty for all)",
+    endpoint: "/api/locations",
+    method: "GET",
+    fields: { id: "input" },
+  },
+  {
+    name: "Create Location",
+    endpoint: "/api/locations",
+    method: "POST",
+    fields: { street: "input", city: "input", state: "input", country: "input", zip_code: "input" },
+  },
+  {
+    name: "Delete Location",
+    endpoint: "/api/locations/:id",
+    method: "DELETE",
+    fields: { id: "input" },
+  },
 ];
 
 // Do not edit below here.

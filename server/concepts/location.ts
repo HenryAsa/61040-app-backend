@@ -15,13 +15,21 @@ export default class LocationConcept {
 
   async create(street: string, city: string, state: string, country: string, zip_code: number) {
     await this.canCreate(street, city, state, country, zip_code);
-    const locationExists = await this.getLocationByAddress(street, city, state, country, zip_code);
 
-    if (locationExists !== null) {
+    try {
+      // Return already existing location if one already exists
+      const locationExists = await this.getLocationByAddress(street, city, state, country, zip_code);
+      return { msg: "Location already exists and is being returned!", location: await locationExists };
+    } catch {
       const _id = await this.locations.createOne({ street, city, state, country, zip_code });
       return { msg: "Location created successfully!", location: await this.locations.readOne({ _id }) };
     }
-    return { msg: "Location already exists and is being returned!", location: await locationExists };
+    // return await this.getLocationByAddress(street, city, state, country, zip_code).catch((Error) => {
+    //   const _id = await this.locations.createOne({ street, city, state, country, zip_code });
+    //   return { msg: "Location created successfully!", location: await this.locations.readOne({ _id }) };
+    // }).then(() => {
+    //   return { msg: "Location already exists and is being returned!", location: await locationExists };
+    // })
   }
 
   // private sanitizeLocation(location: LocationDoc) {
@@ -91,13 +99,13 @@ export default class LocationConcept {
   //   return { msg: "Successfully authenticated.", _id: user._id };
   // }
 
-  // async update(_id: ObjectId, update: Partial<UserDoc>) {
-  //   if (update.username !== undefined) {
-  //     await this.isUsernameUnique(update.username);
-  //   }
-  //   await this.users.updateOne({ _id }, update);
-  //   return { msg: "User updated successfully!" };
-  // }
+  async update(_id: ObjectId, update: Partial<LocationDoc>) {
+    // if (update.username !== undefined) {
+    //   await this.isUsernameUnique(update.username);
+    // }
+    await this.locations.updateOne({ _id }, update);
+    return { msg: "Location updated successfully!" };
+  }
 
   async delete(_id: ObjectId) {
     await this.locations.deleteOne({ _id });
