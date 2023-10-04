@@ -65,7 +65,12 @@ export default class LocationConcept {
   // }
 
   async getLocationsInZipCode(zip_code: number) {
-    const locations = await this.locations.readMany({ zip_code });
+    const locations = await this.locations.readMany(
+      { zip_code },
+      {
+        sort: { dateUpdated: -1 },
+      },
+    );
     if (locations === null) {
       throw new LocationNotFoundInDBError(String(zip_code));
     }
@@ -73,7 +78,12 @@ export default class LocationConcept {
   }
 
   async getLocationsInCity(city: string) {
-    const locations = await this.locations.readMany({ city });
+    const locations = await this.locations.readMany(
+      { city },
+      {
+        sort: { dateUpdated: -1 },
+      },
+    );
     if (locations === null) {
       throw new LocationNotFoundInDBError(city);
     }
@@ -81,7 +91,12 @@ export default class LocationConcept {
   }
 
   async getLocations() {
-    return await this.locations.readMany({});
+    return await this.locations.readMany(
+      {},
+      {
+        sort: { dateUpdated: -1 },
+      },
+    );
   }
 
   // async getUsers(username?: string) {

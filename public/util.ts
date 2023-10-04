@@ -101,6 +101,30 @@ const operations: operation[] = [
     method: "DELETE",
     fields: { id: "input" },
   },
+  {
+    name: "Get Activities (empty for all)",
+    endpoint: "/api/activities",
+    method: "GET",
+    fields: {},
+  },
+  {
+    name: "Create Activity",
+    endpoint: "/api/activities",
+    method: "POST",
+    fields: { name: "input" },
+  },
+  {
+    name: "Search for an Activity By Name",
+    endpoint: "/api/activities/:name",
+    method: "GET",
+    fields: { name: "input" },
+  },
+  {
+    name: "Delete Activity",
+    endpoint: "/api/activities/:id",
+    method: "DELETE",
+    fields: { id: "input" },
+  },
 ];
 
 // Do not edit below here.

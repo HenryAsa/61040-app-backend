@@ -2,11 +2,12 @@ import { ObjectId } from "mongodb";
 
 import { Router, getExpressRouter } from "./framework/router";
 
-import { Friend, Post, User, WebSession, Location } from "./app";
+import { Friend, Post, User, WebSession, Location, Activity } from "./app";
 import { PostDoc, PostOptions } from "./concepts/post";
 import { UserDoc } from "./concepts/user";
 import { WebSessionDoc } from "./concepts/websession";
 import { LocationDoc } from "./concepts/location";
+import { ActivityDoc, ActivityOptions } from "./concepts/activity_group";
 
 import Responses from "./responses";
 
@@ -146,6 +147,7 @@ class Routes {
   }
 
   //// LOCATIONS ////
+
   @Router.get("/locations")
   async getLocations() {
     return await Location.getLocations();
@@ -168,6 +170,46 @@ class Routes {
     // const user = WebSession.getUser(session);
     // await Location.isAuthor(user, _id);
     return Location.delete(_id);
+  }
+
+  //// ACTIVITIES ////
+
+  @Router.get("/activities")
+  async getActivities(creator?: string) {
+    let activities;
+    if (creator) {
+      const id = (await User.getUserByUsername(creator))._id;
+      activities = await Activity.getByCreator(id);
+    } else {
+      activities = await Activity.getActivities({});
+    }
+    return activities;
+  }
+
+  @Router.post("/activities/:name")
+  async getActivityByName(name: string) {
+    const activity = await Activity.getActivityByName(name);
+    return { msg: activity.msg, activity: activity };
+  }
+
+  @Router.post("/activities")
+  async createActivity(session: WebSessionDoc, name: string, options?: ActivityOptions) {
+    const user = WebSession.getUser(session);
+    const activity = await Activity.create(user, name, options);
+    return { msg: activity.msg, activity: activity };
+  }
+
+  @Router.patch("/activities/:_id")
+  async updateActivity(session: WebSessionDoc, _id: ObjectId, update: Partial<ActivityDoc>) {
+    const user = WebSession.getUser(session);
+    await Activity.isCreator(_id, user);
+    return await Activity.update(_id, update);
+  }
+
+  @Router.delete("/activities/:_id")
+  async deleteActivity(session: WebSessionDoc, _id: ObjectId) {
+    const user = WebSession.getUser(session);
+    return Activity.delete(_id, user);  // CHANGE THIS TO ISMANAGER
   }
 }
 

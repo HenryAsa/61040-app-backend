@@ -1,10 +1,12 @@
 import { ObjectId } from "mongodb";
 import DocCollection, { BaseDoc } from "../framework/doc";
+import { LocationDoc } from "./location";
 import { BadValuesError, NotAllowedError, NotFoundError } from "./errors";
 
 export interface UserDoc extends BaseDoc {
   username: string;
   password: string;
+  // address?: LocationDoc;
 }
 
 export default class UserConcept {
@@ -80,6 +82,10 @@ export default class UserConcept {
       throw new NotFoundError(`User not found!`);
     }
   }
+
+  // async addLocationToUser(_id: ObjectId, location_id: ObjectId) {
+    
+  // }
 
   private async canCreate(username: string, password: string) {
     if (!username || !password) {
