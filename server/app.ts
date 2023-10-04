@@ -1,4 +1,4 @@
-import ActivityConcept from "./concepts/activity_group";
+import ActivityConcept from "./concepts/activities";
 import FriendConcept from "./concepts/friend";
 import LocationConcept from "./concepts/location";
 import PostConcept from "./concepts/post";

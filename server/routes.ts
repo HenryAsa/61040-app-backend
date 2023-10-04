@@ -2,12 +2,11 @@ import { ObjectId } from "mongodb";
 
 import { Router, getExpressRouter } from "./framework/router";
 
-import { Friend, Post, User, WebSession, Location, Activity } from "./app";
+import { Activity, Friend, Location, Post, User, WebSession } from "./app";
+import { ActivityDoc, ActivityOptions } from "./concepts/activities";
 import { PostDoc, PostOptions } from "./concepts/post";
 import { UserDoc } from "./concepts/user";
 import { WebSessionDoc } from "./concepts/websession";
-import { LocationDoc } from "./concepts/location";
-import { ActivityDoc, ActivityOptions } from "./concepts/activity_group";
 
 import Responses from "./responses";
 
@@ -209,7 +208,7 @@ class Routes {
   @Router.delete("/activities/:_id")
   async deleteActivity(session: WebSessionDoc, _id: ObjectId) {
     const user = WebSession.getUser(session);
-    return Activity.delete(_id, user);  // CHANGE THIS TO ISMANAGER
+    return Activity.delete(_id, user); // CHANGE THIS TO ISMANAGER
   }
 }
 
