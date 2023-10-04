@@ -188,7 +188,7 @@ class Routes {
   @Router.post("/activities/:name")
   async getActivityByName(name: string) {
     const activity = await Activity.getActivityByName(name);
-    return { msg: activity.msg, activity: activity };
+    return { msg: activity.msg, activity: activity.activity };
   }
 
   @Router.post("/activities")
@@ -210,6 +210,85 @@ class Routes {
     const user = WebSession.getUser(session);
     return Activity.delete(_id, user); // CHANGE THIS TO ISMANAGER
   }
+
+  //// COMMENTS ////
+
+  // @Router.get("/comments")
+  // async getComments(creator?: string) {
+  //   let comments;
+  //   if (creator) {
+  //     const id = (await User.getUserByUsername(creator))._id;
+  //     comments = await Comment.getByCreator(id);
+  //   } else {
+  //     comments = await Comment.getComments({});
+  //   }
+  //   return comments;
+  // }
+
+  // @Router.patch("/comments/:_id")
+  // async getComment(_id: ObjectId) {
+  //   return await Comment.getCommentById(_id);
+  // }
+
+  // @Router.post("/comments")
+  // async createComment(session: WebSessionDoc, post: ObjectId, content: string) {
+  //   const user = WebSession.getUser(session);
+  //   const comment = await Comment.create(user, post, content);
+  //   return { msg: comment.msg, comment: comment.comment };
+  // }
+
+  // @Router.patch("/comments/:_id")
+  // async updateComment(session: WebSessionDoc, _id: ObjectId, update: Partial<CommentDoc>) {
+  //   const user = WebSession.getUser(session);
+  //   await Comment.isAuthor(_id, user);
+  //   return await Comment.update(_id, update);
+  // }
+
+  // @Router.delete("/comments/:_id")
+  // async deleteComment(session: WebSessionDoc, _id: ObjectId) {
+  //   const user = WebSession.getUser(session);
+  //   return Comment.delete(_id, user);
+  // }
+
+  // //// CARPOOLS ////
+
+  // @Router.get("/carpool")
+  // async getCarpools(creator?: string) {
+  //   let carpools;
+  //   if (creator) {
+  //     const id = (await User.getUserByUsername(creator))._id;
+  //     carpools = await Activity.getByCreator(id);
+  //   } else {
+  //     carpools = await Activity.getCarpools({});
+  //   }
+  //   return carpools;
+  // }
+
+  // @Router.post("/carpool/:name")
+  // async getCarpoolByName(name: string) {
+  //   const carpool = await Carpool.getCarpoolByName(name);
+  //   return { msg: carpool.msg, carpool: carpool.carpool };
+  // }
+
+  // @Router.post("/carpool")
+  // async createCarpool(session: WebSessionDoc, name: string, options?: CarpoolOptions) {
+  //   const user = WebSession.getUser(session);
+  //   const carpool = await Carpool.create(user, name, options);
+  //   return { msg: carpool.msg, carpool: carpool.carpool };
+  // }
+
+  // @Router.patch("/carpool/:_id")
+  // async updateCarpool(session: WebSessionDoc, _id: ObjectId, update: Partial<CarpoolDoc>) {
+  //   const user = WebSession.getUser(session);
+  //   await Carpool.isCreator(_id, user);
+  //   return await Carpool.update(_id, update);
+  // }
+
+  // @Router.delete("/carpool/:_id")
+  // async deleteCarpool(session: WebSessionDoc, _id: ObjectId) {
+  //   const user = WebSession.getUser(session);
+  //   return Carpool.delete(_id, user); // CHANGE THIS TO ISDRIVER
+  // }
 }
 
 export default getExpressRouter(new Routes());
