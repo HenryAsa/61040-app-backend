@@ -195,7 +195,7 @@ class Routes {
   async createActivity(session: WebSessionDoc, name: string, options?: ActivityOptions) {
     const user = WebSession.getUser(session);
     const activity = await Activity.create(user, name, options);
-    return { msg: activity.msg, activity: activity };
+    return { msg: activity.msg, activity: activity.activity };
   }
 
   @Router.patch("/activities/:_id")

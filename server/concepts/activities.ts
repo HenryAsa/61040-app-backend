@@ -23,7 +23,7 @@ export default class ActivityConcept {
     await this.canCreate(name);
     const _id = await this.activities.createOne({ creator, name, options });
     await this.activities.updateOne({ _id }, { managers: [creator] });
-    return { msg: `Activity "${name}" was successfully created!`, activity: await this.activities.readOne({ _id }) };
+    return { msg: `Activity '${name}' was successfully created!`, activity: await this.activities.readOne({ _id }) };
   }
 
   async getActivities(query: Filter<ActivityDoc>) {
