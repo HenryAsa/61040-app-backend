@@ -42,7 +42,7 @@ export default class ActivityConcept {
     // return this.sanitizeActivity(activity);
   }
 
-  async getByCreator(creator: ObjectId) {
+  async getActivitiesByCreator(creator: ObjectId) {
     return await this.getActivities({ creator });
   }
 
@@ -64,8 +64,8 @@ export default class ActivityConcept {
       throw new NotFoundError(`Activity ${_id} does not exist!`);
     }
     if (activity.creator.toString() !== user.toString()) {
-    // if (activity.creator.id !== user.id) {
-    // if (activity.creator !== user) {
+      // if (activity.creator.id !== user.id) {
+      // if (activity.creator !== user) {
       console.log(activity, activity.creator, user, user.id);
       throw new ActivityCreatorNotMatchError(user, _id);
     }
