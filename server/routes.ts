@@ -2,8 +2,9 @@ import { ObjectId } from "mongodb";
 
 import { Router, getExpressRouter } from "./framework/router";
 
-import { Activity, Friend, Location, Post, User, WebSession } from "./app";
+import { Activity, Comment, Friend, Location, Post, User, WebSession } from "./app";
 import { ActivityDoc, ActivityOptions } from "./concepts/activities";
+import { CommentDoc, CommentOptions } from "./concepts/comment";
 import { PostDoc, PostOptions } from "./concepts/post";
 import { UserDoc } from "./concepts/user";
 import { WebSessionDoc } from "./concepts/websession";
@@ -68,7 +69,7 @@ class Routes {
     let posts;
     if (author) {
       const id = (await User.getUserByUsername(author))._id;
-      posts = await Post.getByAuthor(id);
+      posts = await Post.getPostsByAuthor(id);
     } else {
       posts = await Post.getPosts({});
     }
@@ -93,6 +94,11 @@ class Routes {
   async deletePost(session: WebSessionDoc, _id: ObjectId) {
     const user = WebSession.getUser(session);
     await Post.isAuthor(user, _id);
+    // IS THIS CORRECT?
+    const comments = await Comment.getCommentsByUserId(user);
+    for (const comment of comments) {
+      await Comment.delete(comment._id);
+    }
     return Post.delete(_id);
   }
 
@@ -178,7 +184,7 @@ class Routes {
     let activities;
     if (creator) {
       const id = (await User.getUserByUsername(creator))._id;
-      activities = await Activity.getByCreator(id);
+      activities = await Activity.getActivitiesByCreator(id);
     } else {
       activities = await Activity.getActivities({});
     }
@@ -186,7 +192,7 @@ class Routes {
   }
 
   @Router.post("/activities/:name")
-  async getActivityByName(name: string) {
+  async getActivityByName(session: WebSessionDoc, name: string) {
     const activity = await Activity.getActivityByName(name);
     return { msg: activity.msg, activity: activity.activity };
   }
@@ -201,6 +207,7 @@ class Routes {
   @Router.patch("/activities/:_id")
   async updateActivity(session: WebSessionDoc, _id: ObjectId, update: Partial<ActivityDoc>) {
     const user = WebSession.getUser(session);
+    // WHY CAN'T I DO user._id?
     await Activity.isCreator(_id, user);
     return await Activity.update(_id, update);
   }
@@ -213,42 +220,44 @@ class Routes {
 
   //// COMMENTS ////
 
-  // @Router.get("/comments")
-  // async getComments(creator?: string) {
-  //   let comments;
-  //   if (creator) {
-  //     const id = (await User.getUserByUsername(creator))._id;
-  //     comments = await Comment.getByCreator(id);
-  //   } else {
-  //     comments = await Comment.getComments({});
-  //   }
-  //   return comments;
-  // }
+  @Router.get("/comments")
+  async getComments(creator?: string) {
+    let comments;
+    if (creator) {
+      const id = (await User.getUserByUsername(creator))._id;
+      comments = await Comment.getCommentsByAuthor(id);
+    } else {
+      comments = await Comment.getComments({});
+    }
+    return comments;
+  }
 
-  // @Router.patch("/comments/:_id")
-  // async getComment(_id: ObjectId) {
-  //   return await Comment.getCommentById(_id);
-  // }
+  @Router.get("/comments/:parent_post")
+  async getCommentsFromParentPost(parent_post: ObjectId) {
+    return await Comment.getCommentsByParentPost(parent_post);
+  }
 
-  // @Router.post("/comments")
-  // async createComment(session: WebSessionDoc, post: ObjectId, content: string) {
-  //   const user = WebSession.getUser(session);
-  //   const comment = await Comment.create(user, post, content);
-  //   return { msg: comment.msg, comment: comment.comment };
-  // }
+  @Router.post("/comments")
+  async createComment(session: WebSessionDoc, content: string, parent_post: ObjectId, parent_comment?: ObjectId, options?: CommentOptions) {
+    const user = WebSession.getUser(session);
+    await Post.getPostById(parent_post);
+    const comment = await Comment.create(user, content, parent_post, parent_comment, options);
+    return { msg: comment.msg, comment: comment.comment };
+  }
 
-  // @Router.patch("/comments/:_id")
-  // async updateComment(session: WebSessionDoc, _id: ObjectId, update: Partial<CommentDoc>) {
-  //   const user = WebSession.getUser(session);
-  //   await Comment.isAuthor(_id, user);
-  //   return await Comment.update(_id, update);
-  // }
+  @Router.patch("/comments/:_id")
+  async updateComment(session: WebSessionDoc, _id: ObjectId, update: Partial<CommentDoc>) {
+    const user = WebSession.getUser(session);
+    await Comment.isAuthor(_id, user);
+    return await Comment.update(_id, update);
+  }
 
-  // @Router.delete("/comments/:_id")
-  // async deleteComment(session: WebSessionDoc, _id: ObjectId) {
-  //   const user = WebSession.getUser(session);
-  //   return Comment.delete(_id, user);
-  // }
+  @Router.delete("/comments/:_id")
+  async deleteComment(session: WebSessionDoc, _id: ObjectId) {
+    const user = WebSession.getUser(session);
+    await Comment.isAuthor(user, _id);
+    return Comment.delete(_id);
+  }
 
   // //// CARPOOLS ////
 

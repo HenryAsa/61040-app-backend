@@ -125,6 +125,30 @@ const operations: operation[] = [
     method: "DELETE",
     fields: { id: "input" },
   },
+  {
+    name: "Get Comments (empty for all)",
+    endpoint: "/api/comments",
+    method: "GET",
+    fields: {},
+  },
+  {
+    name: "Create Comment",
+    endpoint: "/api/comments",
+    method: "POST",
+    fields: { content: "input", parent_post: "input" },
+  },
+  {
+    name: "Search for Comments By Parent Post",
+    endpoint: "/api/comments/:parent_post",
+    method: "GET",
+    fields: { parent_post: "input" },
+  },
+  {
+    name: "Delete Comment",
+    endpoint: "/api/comments/:id",
+    method: "DELETE",
+    fields: { id: "input" },
+  },
 ];
 
 // Do not edit below here.
