@@ -192,7 +192,7 @@ class Routes {
   }
 
   @Router.post("/activities/:name")
-  async getActivityByName(session: WebSessionDoc, name: string) {
+  async getActivityByName(name: string) {
     const activity = await Activity.getActivityByName(name);
     return { msg: activity.msg, activity: activity.activity };
   }
