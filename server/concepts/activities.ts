@@ -98,7 +98,7 @@ export default class ActivityConcept {
 
   private async isNameUnique(name: string) {
     if (await this.activities.readOne({ name })) {
-      throw new NotAllowedError(`User with username ${name} already exists!`);
+      throw new NotAllowedError(`Activity with the name ${name} already exists!`);
     }
   }
 }
