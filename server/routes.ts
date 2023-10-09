@@ -46,6 +46,29 @@ class Routes {
   @Router.delete("/users")
   async deleteUser(session: WebSessionDoc) {
     const user = WebSession.getUser(session);
+
+    // Delete all comments associated with the User
+    const comments = await Comment.getCommentsByUserId(user);
+    for (const comment of comments) {
+      // Delete all sub-comments replying to a deleted parent comment
+      const sub_comments = await Comment.getCommentsByTarget(comment._id);
+      for (const sub_comment of sub_comments) {
+        await Comment.delete(sub_comment._id);
+      }
+      await Comment.delete(comment._id);
+    }
+
+    // Delete all posts associated with the User
+    const posts = await Post.getPostsByAuthor(user);
+    for (const post of posts) {
+      // Delete all of the comments underneath the post
+      const post_comments = await Comment.getCommentsByRoot(post._id);
+      for (const post_comment of post_comments) {
+        await Comment.delete(post_comment._id);
+      }
+      await Post.delete(post._id);
+    }
+
     WebSession.end(session);
     return await User.delete(user);
   }
@@ -95,7 +118,6 @@ class Routes {
   async deletePost(session: WebSessionDoc, _id: ObjectId) {
     const user = WebSession.getUser(session);
     await Post.isAuthor(user, _id);
-    // IS THIS CORRECT?
     const comments = await Comment.getCommentsByUserId(user);
     for (const comment of comments) {
       await Comment.delete(comment._id);
