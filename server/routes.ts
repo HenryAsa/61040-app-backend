@@ -242,12 +242,12 @@ class Routes {
   }
 
   @Router.get("/comments/:target")
-  async getCommentByTarget(target: ObjectId) {
+  async getCommentsByTarget(target: ObjectId) {
     return await Comment.getCommentsByTarget(target);
   }
 
   @Router.get("/comments/:root")
-  async getCommentByRoot(root: ObjectId) {
+  async getCommentsByRoot(root: ObjectId) {
     return await Comment.getCommentsByRoot(root);
   }
 
