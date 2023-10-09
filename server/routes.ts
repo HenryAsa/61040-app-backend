@@ -232,16 +232,24 @@ class Routes {
     return comments;
   }
 
-  @Router.get("/comments/:parent_post")
-  async getCommentsFromParentPost(parent_post: ObjectId) {
-    return await Comment.getCommentsByParentPost(parent_post);
+  @Router.get("/comments/:target")
+  async getCommentByTarget(target: ObjectId) {
+    return await Comment.getCommentsByTarget(target);
+  }
+
+  @Router.get("/comments/:root")
+  async getCommentByRoot(root: ObjectId) {
+    return await Comment.getCommentsByRoot(root);
   }
 
   @Router.post("/comments")
-  async createComment(session: WebSessionDoc, content: string, parent_post: ObjectId, parent_comment?: ObjectId, options?: CommentOptions) {
+  async createComment(session: WebSessionDoc, content: string, target: ObjectId, root?: ObjectId, options?: CommentOptions) {
     const user = WebSession.getUser(session);
-    await Post.getPostById(parent_post);
-    const comment = await Comment.create(user, content, parent_post, parent_comment, options);
+    await Post.getPostById(target);
+    if (root === undefined) {
+      root = target;
+    }
+    const comment = await Comment.create(user, content, target, root, options);
     return { msg: comment.msg, comment: comment.comment };
   }
 

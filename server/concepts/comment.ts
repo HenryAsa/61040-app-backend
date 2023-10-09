@@ -11,16 +11,16 @@ export interface CommentOptions {
 export interface CommentDoc extends BaseDoc {
   author: ObjectId;
   content: string;
-  parent_post: ObjectId;
-  parent_comment?: ObjectId; // Should this move to options?
+  root: ObjectId;
+  target: ObjectId;
   options?: CommentOptions;
 }
 
 export default class CommentConcept {
   public readonly comments = new DocCollection<CommentDoc>("comments");
 
-  async create(author: ObjectId, content: string, parent_post: ObjectId, parent_comment?: ObjectId, options?: CommentOptions) {
-    const _id = await this.comments.createOne({ author, parent_post, content, parent_comment, options });
+  async create(author: ObjectId, content: string, target: ObjectId, root: ObjectId, options?: CommentOptions) {
+    const _id = await this.comments.createOne({ author, content, target, root, options });
     return { msg: "Comment successfully created!", comment: await this.comments.readOne({ _id }) };
   }
 
@@ -35,8 +35,12 @@ export default class CommentConcept {
     return await this.getComments({ user });
   }
 
-  async getCommentsByParentPost(parent_post: ObjectId) {
-    return await this.getComments({ parent_post });
+  async getCommentsByTarget(target: ObjectId) {
+    return await this.getComments({ target });
+  }
+
+  async getCommentsByRoot(root: ObjectId) {
+    return await this.getComments({ root });
   }
 
   async getCommentsByAuthor(author: ObjectId) {
@@ -57,7 +61,7 @@ export default class CommentConcept {
   async isAuthor(user: ObjectId, _id: ObjectId) {
     const comment = await this.comments.readOne({ _id });
     if (!comment) {
-      throw new NotFoundError(`Comment ${_id} does not exist!`);
+      throw new NotFoundError(`Comment '${_id}' does not exist!`);
     }
     if (comment.author.toString() !== user.toString()) {
       throw new CommentAuthorNotMatchError(user, _id);

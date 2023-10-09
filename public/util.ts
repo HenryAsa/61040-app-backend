@@ -135,13 +135,19 @@ const operations: operation[] = [
     name: "Create Comment",
     endpoint: "/api/comments",
     method: "POST",
-    fields: { content: "input", parent_post: "input" },
+    fields: { content: "input", target: "input", root: "input" },
   },
   {
-    name: "Search for Comments By Parent Post",
-    endpoint: "/api/comments/:parent_post",
+    name: "Search for Comments By Target (what the Comment is directly nested beneath)",
+    endpoint: "/api/comments/:target",
     method: "GET",
-    fields: { parent_post: "input" },
+    fields: { target: "input" },
+  },
+  {
+    name: "Search for Comments By Root (the original Post or object the comment tree is built from)",
+    endpoint: "/api/comments/:root",
+    method: "GET",
+    fields: { root: "input" },
   },
   {
     name: "Delete Comment",
