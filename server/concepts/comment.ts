@@ -53,9 +53,17 @@ export default class CommentConcept {
     return { msg: "Comment successfully updated!" };
   }
 
-  async delete(_id: ObjectId) {
-    await this.comments.deleteOne({ _id });
-    return { msg: "Comment deleted successfully!" };
+  async delete(comment: ObjectId) {
+    const [children, _] = await Promise.all([
+      this.getCommentsByTarget(comment), // Get all Children
+      this.comments.deleteOne({ _id: comment }), // and delete current comment
+    ]);
+    // Now delete all children by recursively calling this function
+    await Promise.all(children.map((child) => this.delete(child._id)));
+  }
+
+  async deleteByRoot(_id: ObjectId) {
+    await this.comments.deleteMany({ root: _id });
   }
 
   async isAuthor(user: ObjectId, _id: ObjectId) {

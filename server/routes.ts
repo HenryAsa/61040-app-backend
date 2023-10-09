@@ -2,9 +2,8 @@ import { ObjectId } from "mongodb";
 
 import { Router, getExpressRouter } from "./framework/router";
 
-import { Activity, Carpool, Comment, Friend, Location, Post, User, WebSession } from "./app";
+import { Activity, Comment, Friend, Location, Post, User, WebSession } from "./app";
 import { ActivityDoc, ActivityOptions } from "./concepts/activities";
-import { CarpoolDoc } from "./concepts/carpools";
 import { CommentDoc, CommentOptions } from "./concepts/comment";
 import { PostDoc, PostOptions } from "./concepts/post";
 import { UserDoc } from "./concepts/user";
@@ -49,23 +48,13 @@ class Routes {
 
     // Delete all comments associated with the User
     const comments = await Comment.getCommentsByUserId(user);
-    for (const comment of comments) {
-      // Delete all sub-comments replying to a deleted parent comment
-      const sub_comments = await Comment.getCommentsByTarget(comment._id);
-      for (const sub_comment of sub_comments) {
-        await Comment.delete(sub_comment._id);
-      }
-      await Comment.delete(comment._id);
-    }
+    await Promise.all(comments.map((comment) => Comment.delete(comment._id)));
 
     // Delete all posts associated with the User
     const posts = await Post.getPostsByAuthor(user);
     for (const post of posts) {
       // Delete all of the comments underneath the post
-      const post_comments = await Comment.getCommentsByRoot(post._id);
-      for (const post_comment of post_comments) {
-        await Comment.delete(post_comment._id);
-      }
+      await Comment.deleteByRoot(post._id);
       await Post.delete(post._id);
     }
 
@@ -118,10 +107,7 @@ class Routes {
   async deletePost(session: WebSessionDoc, _id: ObjectId) {
     const user = WebSession.getUser(session);
     await Post.isAuthor(user, _id);
-    const comments = await Comment.getCommentsByUserId(user);
-    for (const comment of comments) {
-      await Comment.delete(comment._id);
-    }
+    await Comment.deleteByRoot(_id);
     return Post.delete(_id);
   }
 
