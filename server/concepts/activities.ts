@@ -38,7 +38,7 @@ export default class ActivityConcept {
     if (activity === null) {
       throw new NotFoundError(`Activity with the name "${name}" was not found!`);
     }
-    return { msg: `Retrieved the activity "${name}"!`, activity: activity };
+    return { msg: `Retrieved the activity '${name}'!`, activity: activity };
     // return this.sanitizeActivity(activity);
   }
 
@@ -61,7 +61,7 @@ export default class ActivityConcept {
   async isCreator(_id: ObjectId, user: ObjectId) {
     const activity = await this.activities.readOne({ _id });
     if (!activity) {
-      throw new NotFoundError(`Activity ${_id} does not exist!`);
+      throw new NotFoundError(`Activity '${_id}' does not exist!`);
     }
     if (activity.creator.toString() !== user.toString()) {
       // if (activity.creator.id !== user.id) {
@@ -98,7 +98,7 @@ export default class ActivityConcept {
 
   private async isNameUnique(name: string) {
     if (await this.activities.readOne({ name })) {
-      throw new NotAllowedError(`Activity with the name ${name} already exists!`);
+      throw new NotAllowedError(`Activity with the name '${name}' already exists!`);
     }
   }
 }

@@ -191,7 +191,7 @@ class Routes {
     return activities;
   }
 
-  @Router.post("/activities/:name")
+  @Router.get("/activities/:name")
   async getActivityByName(name: string) {
     const activity = await Activity.getActivityByName(name);
     return { msg: activity.msg, activity: activity.activity };
