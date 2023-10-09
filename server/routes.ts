@@ -2,8 +2,9 @@ import { ObjectId } from "mongodb";
 
 import { Router, getExpressRouter } from "./framework/router";
 
-import { Activity, Comment, Friend, Location, Post, User, WebSession } from "./app";
+import { Activity, Carpool, Comment, Friend, Location, Post, User, WebSession } from "./app";
 import { ActivityDoc, ActivityOptions } from "./concepts/activities";
+import { CarpoolDoc } from "./concepts/carpools";
 import { CommentDoc, CommentOptions } from "./concepts/comment";
 import { PostDoc, PostOptions } from "./concepts/post";
 import { UserDoc } from "./concepts/user";
