@@ -19,7 +19,7 @@ export default class LocationConcept {
     try {
       // Return already existing location if one already exists
       const locationExists = await this.getLocationByAddress(street, city, state, country, zip_code);
-      return { msg: "Location already exists and is being returned!", location: await locationExists };
+      return { msg: "Location already exists and is being returned!", location: locationExists };
     } catch {
       const _id = await this.locations.createOne({ street, city, state, country, zip_code });
       return { msg: "Location created successfully!", location: await this.locations.readOne({ _id }) };

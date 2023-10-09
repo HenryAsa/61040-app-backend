@@ -36,7 +36,7 @@ export default class ActivityConcept {
   async getActivityByName(name: string) {
     const activity = await this.activities.readOne({ name });
     if (activity === null) {
-      throw new NotFoundError(`Activity with the name "${name}" was not found!`);
+      throw new NotFoundError(`Activity with the name '${name}' was not found!`);
     }
     return { msg: `Retrieved the activity '${name}'!`, activity: activity };
     // return this.sanitizeActivity(activity);
