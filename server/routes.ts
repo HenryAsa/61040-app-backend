@@ -2,8 +2,9 @@ import { ObjectId } from "mongodb";
 
 import { Router, getExpressRouter } from "./framework/router";
 
-import { Activity, Comment, Friend, Location, Post, User, WebSession } from "./app";
+import { Activity, Carpool, Comment, Friend, Location, Post, User, WebSession } from "./app";
 import { ActivityDoc, ActivityOptions } from "./concepts/activities";
+import { CarpoolDoc, CarpoolOptions } from "./concepts/carpools";
 import { CommentDoc, CommentOptions } from "./concepts/comment";
 import { PostDoc, PostOptions } from "./concepts/post";
 import { UserDoc } from "./concepts/user";
@@ -278,43 +279,43 @@ class Routes {
 
   // //// CARPOOLS ////
 
-  // @Router.get("/carpool")
-  // async getCarpools(creator?: string) {
-  //   let carpools;
-  //   if (creator) {
-  //     const id = (await User.getUserByUsername(creator))._id;
-  //     carpools = await Activity.getByCreator(id);
-  //   } else {
-  //     carpools = await Activity.getCarpools({});
-  //   }
-  //   return carpools;
-  // }
+  @Router.get("/carpool")
+  async getCarpools(creator?: string) {
+    let carpools;
+    if (creator) {
+      const id = (await User.getUserByUsername(creator))._id;
+      carpools = await Carpool.getCarpoolsByDriver(id);
+    } else {
+      carpools = await Carpool.getCarpools({});
+    }
+    return carpools;
+  }
 
-  // @Router.post("/carpool/:name")
-  // async getCarpoolByName(name: string) {
-  //   const carpool = await Carpool.getCarpoolByName(name);
-  //   return { msg: carpool.msg, carpool: carpool.carpool };
-  // }
+  @Router.post("/carpool/:name")
+  async getCarpoolByName(name: string) {
+    const carpool = await Carpool.getCarpoolsByName(name);
+    return { msg: carpool.msg, carpool: carpool.carpool };
+  }
 
-  // @Router.post("/carpool")
-  // async createCarpool(session: WebSessionDoc, name: string, options?: CarpoolOptions) {
-  //   const user = WebSession.getUser(session);
-  //   const carpool = await Carpool.create(user, name, options);
-  //   return { msg: carpool.msg, carpool: carpool.carpool };
-  // }
+  @Router.post("/carpool")
+  async createCarpool(session: WebSessionDoc, name: string, target: ObjectId, options?: CarpoolOptions) {
+    const user = WebSession.getUser(session);
+    const carpool = await Carpool.create(user, name, target, options);
+    return { msg: carpool.msg, carpool: carpool.carpool };
+  }
 
-  // @Router.patch("/carpool/:_id")
-  // async updateCarpool(session: WebSessionDoc, _id: ObjectId, update: Partial<CarpoolDoc>) {
-  //   const user = WebSession.getUser(session);
-  //   await Carpool.isCreator(_id, user);
-  //   return await Carpool.update(_id, update);
-  // }
+  @Router.patch("/carpool/:_id")
+  async updateCarpool(session: WebSessionDoc, _id: ObjectId, update: Partial<CarpoolDoc>) {
+    const user = WebSession.getUser(session);
+    await Carpool.isDriver(_id, user);
+    return await Carpool.update(_id, update);
+  }
 
-  // @Router.delete("/carpool/:_id")
-  // async deleteCarpool(session: WebSessionDoc, _id: ObjectId) {
-  //   const user = WebSession.getUser(session);
-  //   return Carpool.delete(_id, user); // CHANGE THIS TO ISDRIVER
-  // }
+  @Router.delete("/carpool/:_id")
+  async deleteCarpool(session: WebSessionDoc, _id: ObjectId) {
+    const user = WebSession.getUser(session);
+    return Carpool.delete(_id, user); // CHANGE THIS TO ISDRIVER
+  }
 }
 
 export default getExpressRouter(new Routes());
