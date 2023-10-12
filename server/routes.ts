@@ -314,7 +314,7 @@ class Routes {
   @Router.delete("/carpool/:_id")
   async deleteCarpool(session: WebSessionDoc, _id: ObjectId) {
     const user = WebSession.getUser(session);
-    return Carpool.delete(_id, user); // CHANGE THIS TO ISDRIVER
+    return Carpool.delete(_id, user); // CHANGE THIS TO IsDRIVER
   }
 }
 
