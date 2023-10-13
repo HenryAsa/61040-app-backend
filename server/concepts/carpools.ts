@@ -20,7 +20,7 @@ export default class CarpoolConcept {
 
   async create(driver: ObjectId, name: string, target: ObjectId, options?: CarpoolOptions) {
     await this.canCreate(name);
-    const _id = await this.carpools.createOne({ driver, name, target, options });
+    const _id = await this.carpools.createOne({ driver: driver, name: name, target: target, options: options });
     return { msg: `Carpool '${name}' was successfully created!`, carpool: await this.carpools.readOne({ _id }) };
   }
 
@@ -32,7 +32,7 @@ export default class CarpoolConcept {
   }
 
   async getCarpoolsByName(name: string) {
-    const carpool = await this.carpools.readMany({ name });
+    const carpool = await this.carpools.readMany({ name: name });
     if (carpool === null) {
       throw new NotFoundError(`Carpool with the name '${name}' was not found!`);
     }
@@ -41,11 +41,11 @@ export default class CarpoolConcept {
   }
 
   async getCarpoolsInTargetId(target: ObjectId) {
-    return await this.getCarpools({ target });
+    return await this.getCarpools({ target: target });
   }
 
   async getCarpoolsByDriver(driver: ObjectId) {
-    return await this.getCarpools({ driver });
+    return await this.getCarpools({ drive: driver });
   }
 
   async update(_id: ObjectId, update: Partial<CarpoolDoc>) {
