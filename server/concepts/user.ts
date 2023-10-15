@@ -35,7 +35,7 @@ export default class UserConcept {
   }
 
   async getUserByUsername(username: string) {
-    const user = await this.users.readOne({ username });
+    const user = await this.users.readOne({ username: username });
     if (user === null) {
       throw new NotFoundError(`User not found!`);
     }
@@ -58,7 +58,7 @@ export default class UserConcept {
   }
 
   async authenticate(username: string, password: string) {
-    const user = await this.users.readOne({ username, password });
+    const user = await this.users.readOne({ username: username, password: password });
     if (!user) {
       throw new NotAllowedError("Username or password is incorrect.");
     }
