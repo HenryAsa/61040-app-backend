@@ -204,27 +204,38 @@ class Routes {
   @Router.get("/activities/:name")
   async getActivityByName(name: string) {
     const activity = await Activity.getActivityByName(name);
-    return { msg: activity.msg, activity: activity.activity };
+    return { msg: `Successfully retrieved the activity '${name}'`, activity: activity };
   }
 
   @Router.post("/activities")
-  async createActivity(session: WebSessionDoc, name: string, options?: ActivityOptions) {
+  async createActivity(session: WebSessionDoc, name: string, join_code: string, options?: ActivityOptions) {
     const user = WebSession.getUser(session);
-    const activity = await Activity.create(user, name, options);
+    const activity = await Activity.create(user, name, join_code, options);
     return { msg: activity.msg, activity: activity.activity };
+  }
+
+  @Router.patch("/activities/join/:name")
+  async joinActivity(session: WebSessionDoc, name: string, join_code: string) {
+    const user = WebSession.getUser(session);
+    const activity = await Activity.getActivityByName(name);
+    return {
+      msg: `You have been successfully added to the activity '${name}'`,
+      members: await Activity.addUserToActivity(activity._id, user, join_code),
+    };
   }
 
   @Router.patch("/activities/:_id")
   async updateActivity(session: WebSessionDoc, _id: ObjectId, update: Partial<ActivityDoc>) {
     const user = WebSession.getUser(session);
     // WHY CAN'T I DO user._id?
-    await Activity.isCreator(_id, user);
+    await Activity.isManager(_id, user);
     return await Activity.update(_id, update);
   }
 
   @Router.delete("/activities/:_id")
   async deleteActivity(session: WebSessionDoc, _id: ObjectId) {
     const user = WebSession.getUser(session);
+    await Activity.isManager(_id, user);
     return Activity.delete(_id, user); // CHANGE THIS TO ISMANAGER
   }
 
@@ -294,9 +305,9 @@ class Routes {
   @Router.get("/carpool")
   async getCarpoolsInTargetByName(session: WebSessionDoc, target_name: string) {
     const user = WebSession.getUser(session);
-    const _, activity = await Activity.getActivityByName(target_name);
-    await Activity.isMember(user);
-    const carpools = await Carpool.getCarpoolsInTargetId(activity.activity._id);
+    const activity = await Activity.getActivityByName(target_name);
+    await Activity.isMember(activity._id, user);
+    const carpools = await Carpool.getCarpoolsInTargetId(activity._id);
     return carpools;
   }
 
