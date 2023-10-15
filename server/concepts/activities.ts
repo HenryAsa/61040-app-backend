@@ -35,7 +35,7 @@ export default class ActivityConcept {
 
   private sanitizeActivities(activities: Array<ActivityDoc>) {
     // eslint-disable-next-line
-    return activities.map(activity => this.sanitizeActivity(activity))
+    return activities.map((activity) => this.sanitizeActivity(activity));
     // activities.forEach(activity => {
     //   this.sanitizeActivity(activity);
     // });
@@ -91,6 +91,13 @@ export default class ActivityConcept {
     }
     await this.update(_id, { members: activity.members.concat(user) });
     return activity.members;
+  }
+
+  async promoteMemberToManager(_id: ObjectId, user: ObjectId, user_to_promote: ObjectId) {
+    const activity = await this.getActivityById(_id);
+    await this.isManager(_id, user);
+    await this.isMember(_id, user_to_promote);
+    return await this.update(_id, { managers: activity.managers.concat(user_to_promote) });
   }
 
   async delete(_id: ObjectId, user: ObjectId) {
