@@ -135,40 +135,29 @@ export default class ActivityConcept {
     return { msg: "Activity deleted successfully!" };
   }
 
-  async isCreator(_id: ObjectId, user: ObjectId, throw_error: boolean = false) {
+  async isCreator(_id: ObjectId, user: ObjectId, throw_error: boolean = true, check_opposite: boolean = false) {
     const activity = await this.getActivityById(_id);
-    const is_creator = activity.creator.toString() !== user.toString();
+    let is_creator = activity.creator.toString() !== user.toString();
+    if (check_opposite) is_creator = !is_creator;
     if (!throw_error) return is_creator;
     if (!is_creator) throw new ActivityCreatorNotMatchError(user, _id);
   }
 
-  async isManager(_id: ObjectId, user: ObjectId, throw_error: boolean = true) {
+  async isManager(_id: ObjectId, user: ObjectId, throw_error: boolean = true, check_opposite: boolean = false) {
     // if (activity instanceof ObjectId) {
     //   activity = await this.getActivityById(activity);
     // }
     const activity = await this.getActivityById(_id);
-    const is_manager = activity.managers.some((id) => id.toString() === user.toString());
-    console.log("HERE");
-    console.log(`USER`);
-    console.log(`    ID:  ${user}`);
-    console.log(`    TYPE:  ${typeof user}`);
-    console.log(`ACTIVITY MANAGERS`);
-    console.log(`    MANAGERS:  ${activity.managers}`);
-    console.log(`    TYPE:  ${typeof activity.managers}`);
-    console.log(`ACTIVITY MEMBERS`);
-    console.log(`    MEMBERS:   ${activity.members}`);
-    console.log(`    TYPE:  ${typeof activity.members}`);
-    console.log(`CHECKING THAT USER IS A MANAGER:  ${activity.managers.includes(user)}`);
-    console.log(`CHECKING THAT USER IS A MEMBER:   ${activity.members.includes(user)}`);
-    console.log(`CHECKING THAT USER IS A MANAGER:  ${activity.managers.some((id) => id.toString() === user.toString())}`);
-    console.log(`CHECKING THAT USER IS A MEMBER:   ${activity.members.some((id) => id.toString() === user.toString())}`);
+    let is_manager = activity.managers.some((id) => id.toString() === user.toString());
+    if (check_opposite) is_manager = !is_manager;
     if (!throw_error) return is_manager;
     if (!is_manager) throw new ActivityManagerNotMatchError(user, _id);
   }
 
-  async isMember(_id: ObjectId, user: ObjectId, throw_error: boolean = true) {
+  async isMember(_id: ObjectId, user: ObjectId, throw_error: boolean = true, check_opposite: boolean = false) {
     const activity = await this.getActivityById(_id);
-    const is_member = activity.members.some((id) => id.toString() === user.toString());
+    let is_member = activity.members.some((id) => id.toString() === user.toString());
+    if (check_opposite) is_member = !is_member;
     if (!throw_error) return is_member;
     if (!is_member) throw new ActivityMemberNotMatchError(user, _id);
   }
