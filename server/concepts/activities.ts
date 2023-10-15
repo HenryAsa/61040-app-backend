@@ -13,24 +13,48 @@ export interface ActivityDoc extends BaseDoc {
   members: Array<ObjectId>;
   creator: ObjectId;
   managers: Array<ObjectId>;
+  carpools: Array<ObjectId>;
+  join_code: String;
   options: ActivityOptions;
 }
 
 export default class ActivityConcept {
   public readonly activities = new DocCollection<ActivityDoc>("activities");
 
-  async create(creator: ObjectId, name: string, options?: ActivityOptions) {
+  async create(creator: ObjectId, name: string, join_code: string, options?: ActivityOptions) {
     await this.canCreate(name);
-    const _id = await this.activities.createOne({ creator, name, options });
-    await this.activities.updateOne({ _id }, { managers: [creator] });
+    const _id = await this.activities.createOne({ creator: creator, name: name, join_code: join_code, managers: [creator], members: [creator], carpools: [], options });
     return { msg: `Activity '${name}' was successfully created!`, activity: await this.activities.readOne({ _id }) };
+  }
+
+  private sanitizeActivity(activity: ActivityDoc) {
+    // eslint-disable-next-line
+    const { join_code, ...rest } = activity; // remove password
+    return rest;
+  }
+
+  private sanitizeActivities(activities: Array<ActivityDoc>) {
+    // eslint-disable-next-line
+    return activities.map(activity => this.sanitizeActivity(activity))
+    // activities.forEach(activity => {
+    //   this.sanitizeActivity(activity);
+    // });
+    // return activities;
+  }
+
+  async verifyJoinCode(_id: ObjectId, join_code: string) {
+    const activity = await this.activities.readOne({ _id, join_code });
+    if (!activity) {
+      throw new InvalidJoinCodeError(_id);
+    }
+    return { msg: "Successfully authenticated.", activity: activity };
   }
 
   async getActivities(query: Filter<ActivityDoc>) {
     const activities = await this.activities.readMany(query, {
       sort: { dateUpdated: -1 },
     });
-    return activities;
+    return this.sanitizeActivities(activities);
   }
 
   async getActivityByName(name: string) {
@@ -38,7 +62,16 @@ export default class ActivityConcept {
     if (activity === null) {
       throw new NotFoundError(`Activity with the name '${name}' was not found!`);
     }
-    return { msg: `Retrieved the activity '${name}'!`, activity: activity };
+    return this.sanitizeActivity(activity);
+    // return this.sanitizeActivity(activity);
+  }
+
+  async getActivityById(_id: ObjectId) {
+    const activity = await this.activities.readOne({ _id: _id });
+    if (activity === null) {
+      throw new NotFoundError(`Activity with the id '${_id}' was not found!`);
+    }
+    return this.sanitizeActivity(activity);
     // return this.sanitizeActivity(activity);
   }
 
@@ -47,9 +80,17 @@ export default class ActivityConcept {
   }
 
   async update(_id: ObjectId, update: Partial<ActivityDoc>) {
-    this.sanitizeUpdate(update);
     await this.activities.updateOne({ _id }, update);
     return { msg: "Activity successfully updated!" };
+  }
+
+  async addUserToActivity(_id: ObjectId, user: ObjectId, join_code: string) {
+    const activity = (await this.verifyJoinCode(_id, join_code)).activity;
+    if (activity.members.includes(user)) {
+      throw AlreadyMemberError;
+    }
+    await this.update(_id, { members: activity.members.concat(user) });
+    return activity.members;
   }
 
   async delete(_id: ObjectId, user: ObjectId) {
@@ -59,16 +100,36 @@ export default class ActivityConcept {
   }
 
   async isCreator(_id: ObjectId, user: ObjectId) {
-    const activity = await this.activities.readOne({ _id });
-    if (!activity) {
-      throw new NotFoundError(`Activity '${_id}' does not exist!`);
-    }
+    const activity = await this.getActivityById(_id);
     if (activity.creator.toString() !== user.toString()) {
       // if (activity.creator.id !== user.id) {
       // if (activity.creator !== user) {
       console.log(activity, activity.creator, user, user.id);
       throw new ActivityCreatorNotMatchError(user, _id);
     }
+    return true;
+  }
+
+  async isManager(_id: ObjectId, user: ObjectId) {
+    const activity = await this.getActivityById(_id);
+    if (!activity.managers.includes(user)) {
+      // if (activity.creator.id !== user.id) {
+      // if (activity.creator !== user) {
+      console.log(activity, activity.creator, user, user.id);
+      throw new ActivityManagerNotMatchError(user, _id);
+    }
+    return true;
+  }
+
+  async isMember(_id: ObjectId, user: ObjectId) {
+    const activity = await this.getActivityById(_id);
+    if (!activity.members.includes(user)) {
+      // if (activity.creator.id !== user.id) {
+      // if (activity.creator !== user) {
+      console.log(activity, activity.creator, user, user.id);
+      throw new ActivityMemberNotMatchError(user, _id);
+    }
+    return true;
   }
 
   // TODO: IMPLEMENT isManager
@@ -79,15 +140,15 @@ export default class ActivityConcept {
   //   return rest;
   // }
 
-  private sanitizeUpdate(update: Partial<ActivityDoc>) {
-    // Make sure the update cannot change the author.
-    const allowedUpdates = ["content", "options"];
-    for (const key in update) {
-      if (!allowedUpdates.includes(key)) {
-        throw new NotAllowedError(`Cannot update '${key}' field!`);
-      }
-    }
-  }
+  // private sanitizeUpdate(update: Partial<ActivityDoc>) {
+  //   // Make sure the update cannot change the author.
+  //   const allowedUpdates = ["members", "managers", "location", "car"];
+  //   for (const key in update) {
+  //     if (!allowedUpdates.includes(key)) {
+  //       throw new NotAllowedError(`Cannot update '${key}' field!`);
+  //     }
+  //   }
+  // }
 
   private async canCreate(name: string) {
     if (!name) {
@@ -109,5 +170,38 @@ export class ActivityCreatorNotMatchError extends NotAllowedError {
     public readonly _id: ObjectId,
   ) {
     super("{0} is not the creator of activity {1}!", creator, _id);
+  }
+}
+
+export class ActivityManagerNotMatchError extends NotAllowedError {
+  constructor(
+    public readonly manager: ObjectId,
+    public readonly _id: ObjectId,
+  ) {
+    super("{0} is not the manager of activity {1}!", manager, _id);
+  }
+}
+
+export class ActivityMemberNotMatchError extends NotAllowedError {
+  constructor(
+    public readonly member: ObjectId,
+    public readonly _id: ObjectId,
+  ) {
+    super("{0} is not the member of activity {1}!", member, _id);
+  }
+}
+
+export class AlreadyMemberError extends NotAllowedError {
+  constructor(
+    public readonly user: ObjectId,
+    public readonly _id: ObjectId,
+  ) {
+    super("{0} is already in the activity {1}!", user, _id);
+  }
+}
+
+export class InvalidJoinCodeError extends BadValuesError {
+  constructor(public readonly join_code: ObjectId) {
+    super("The Join Code to join {0} is incorrect!", join_code);
   }
 }
