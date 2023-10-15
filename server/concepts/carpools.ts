@@ -45,7 +45,7 @@ export default class CarpoolConcept {
   }
 
   async getCarpoolsByDriver(driver: ObjectId) {
-    return await this.getCarpools({ drive: driver });
+    return await this.getCarpools({ driver: driver });
   }
 
   async update(_id: ObjectId, update: Partial<CarpoolDoc>) {
