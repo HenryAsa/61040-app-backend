@@ -36,7 +36,7 @@ export default class ActivityConcept {
   private sanitizeActivities(activities: Array<ActivityDoc>) {
     // eslint-disable-next-line
     return activities.map((activity) => this.sanitizeActivity(activity));
-    // activities.forEach(activity => {
+    // activities.forEach((activity) => {
     //   this.sanitizeActivity(activity);
     // });
     // return activities;
@@ -100,6 +100,26 @@ export default class ActivityConcept {
     return await this.update(_id, { managers: activity.managers.concat(user_to_promote) });
   }
 
+  async removeMemberFromActivity(_id: ObjectId, user_to_remove: ObjectId) {
+    await this.isManager(_id, user_to_remove);
+    const activity = await this.getActivityById(_id);
+    const members = activity.members.filter((users) => users.toString() !== user_to_remove.toString());
+    await this.update(_id, { members: members });
+    return { msg: `Successfully removed the member '${user_to_remove}' from the activity '${_id}'` };
+  }
+
+  async removeManagerFromActivity(_id: ObjectId, user_to_remove: ObjectId) {
+    const activity = await this.getActivityById(_id);
+    const managers = activity.managers.filter((users) => users.toString() !== user_to_remove.toString());
+    await this.update(_id, { managers: managers });
+    await this.removeMemberFromActivity(_id, user_to_remove);
+    return { msg: `Successfully removed the manager '${user_to_remove}' from the activity '${_id}'` };
+  }
+
+  async kickMemberFromActivity(_id: ObjectId, user: ObjectId, user_to_remove: ObjectId) {
+    await this.isManager(_id, user);
+  }
+
   async delete(_id: ObjectId, user: ObjectId) {
     await this.isCreator(_id, user);
     await this.activities.deleteOne({ _id });
@@ -113,6 +133,7 @@ export default class ActivityConcept {
       // if (activity.creator !== user) {
       console.log(activity, activity.creator, user, user.id);
       throw new ActivityCreatorNotMatchError(user, _id);
+      return false;
     }
     return true;
   }
@@ -124,6 +145,7 @@ export default class ActivityConcept {
       // if (activity.creator !== user) {
       console.log(activity, activity.creator, user, user.id);
       throw new ActivityManagerNotMatchError(user, _id);
+      return false;
     }
     return true;
   }
@@ -135,6 +157,7 @@ export default class ActivityConcept {
       // if (activity.creator !== user) {
       console.log(activity, activity.creator, user, user.id);
       throw new ActivityMemberNotMatchError(user, _id);
+      return false;
     }
     return true;
   }
