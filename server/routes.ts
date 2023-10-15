@@ -207,6 +207,12 @@ class Routes {
     return { msg: `Successfully retrieved the activity '${name}'`, activity: activity };
   }
 
+  @Router.get("/activities/:id")
+  async getActivityById(id: ObjectId) {
+    const activity = await Activity.getActivityById(id);
+    return { msg: `Successfully retrieved the activity '${id}'`, activity: activity };
+  }
+
   @Router.post("/activities")
   async createActivity(session: WebSessionDoc, name: string, join_code: string, options?: ActivityOptions) {
     const user = WebSession.getUser(session);
@@ -221,6 +227,16 @@ class Routes {
     return {
       msg: `You have been successfully added to the activity '${name}'`,
       members: await Activity.addUserToActivity(activity._id, user, join_code),
+    };
+  }
+
+  @Router.patch("/activities/promote/:id")
+  async promoteMemberInActivityById(session: WebSessionDoc, activity_id: ObjectId, user_to_promote: ObjectId) {
+    const user = WebSession.getUser(session);
+    await Activity.promoteMemberToManager(activity_id, user, user_to_promote);
+    return {
+      msg: `'${user_to_promote}' was successfully promoted to a Manager in the activity ${activity_id}'`,
+      managers: (await Activity.getActivityById(activity_id)).managers,
     };
   }
 

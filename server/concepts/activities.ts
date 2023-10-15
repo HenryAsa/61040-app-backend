@@ -36,10 +36,6 @@ export default class ActivityConcept {
   private sanitizeActivities(activities: Array<ActivityDoc>) {
     // eslint-disable-next-line
     return activities.map((activity) => this.sanitizeActivity(activity));
-    // activities.forEach((activity) => {
-    //   this.sanitizeActivity(activity);
-    // });
-    // return activities;
   }
 
   async verifyJoinCode(_id: ObjectId, join_code: string) {
@@ -71,8 +67,8 @@ export default class ActivityConcept {
     if (activity === null) {
       throw new NotFoundError(`Activity with the id '${_id}' was not found!`);
     }
+    // return activity;
     return this.sanitizeActivity(activity);
-    // return this.sanitizeActivity(activity);
   }
 
   async getActivitiesByCreator(creator: ObjectId) {
@@ -100,6 +96,14 @@ export default class ActivityConcept {
     return await this.update(_id, { managers: activity.managers.concat(user_to_promote) });
   }
 
+  async demoteManagerToMember(_id: ObjectId, user: ObjectId, user_to_demote: ObjectId) {
+    const activity = await this.getActivityById(_id);
+    await this.isManager(_id, user);
+    const managers = activity.managers.filter((users) => users.toString() !== user_to_demote.toString());
+    await this.update(_id, { managers: managers });
+    return { msg: `'${user_to_demote}' is no longer a manager of '${_id}'` };
+  }
+
   async removeMemberFromActivity(_id: ObjectId, user_to_remove: ObjectId) {
     await this.isManager(_id, user_to_remove);
     const activity = await this.getActivityById(_id);
@@ -118,6 +122,8 @@ export default class ActivityConcept {
 
   async kickMemberFromActivity(_id: ObjectId, user: ObjectId, user_to_remove: ObjectId) {
     await this.isManager(_id, user);
+    await this.removeManagerFromActivity(_id, user_to_remove);
+    return { msg: `'${user_to_remove}' has been removed from the activity '${_id}'` };
   }
 
   async delete(_id: ObjectId, user: ObjectId) {
@@ -139,10 +145,11 @@ export default class ActivityConcept {
   }
 
   async isManager(_id: ObjectId, user: ObjectId) {
+    // if (activity instanceof ObjectId) {
+    //   activity = await this.getActivityById(activity);
+    // }
     const activity = await this.getActivityById(_id);
     if (!activity.managers.includes(user)) {
-      // if (activity.creator.id !== user.id) {
-      // if (activity.creator !== user) {
       console.log(activity, activity.creator, user, user.id);
       throw new ActivityManagerNotMatchError(user, _id);
       return false;
@@ -161,14 +168,6 @@ export default class ActivityConcept {
     }
     return true;
   }
-
-  // TODO: IMPLEMENT isManager
-
-  // private sanitizeActivity(user: ActivityDoc) {
-  //   // eslint-disable-next-line
-  //   const { password, ...rest } = user; // remove password
-  //   return rest;
-  // }
 
   // private sanitizeUpdate(update: Partial<ActivityDoc>) {
   //   // Make sure the update cannot change the author.

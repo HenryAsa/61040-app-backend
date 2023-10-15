@@ -108,6 +108,18 @@ const operations: operation[] = [
     fields: {},
   },
   {
+    name: "Search for an Activity By Name",
+    endpoint: "/api/activities/:name",
+    method: "GET",
+    fields: { name: "input" },
+  },
+  {
+    name: "Search for an Activity By Id",
+    endpoint: "/api/activities/:id",
+    method: "GET",
+    fields: { id: "input" },
+  },
+  {
     name: "Create Activity",
     endpoint: "/api/activities",
     method: "POST",
@@ -120,10 +132,10 @@ const operations: operation[] = [
     fields: { name: "input", join_code: "input" },
   },
   {
-    name: "Search for an Activity By Name",
-    endpoint: "/api/activities/:name",
-    method: "GET",
-    fields: { name: "input" },
+    name: "Promote User in an Activity",
+    endpoint: "/api/activities/promote/:id",
+    method: "PATCH",
+    fields: { name: "input", user_to_promote: "input" },
   },
   {
     name: "Delete Activity",
