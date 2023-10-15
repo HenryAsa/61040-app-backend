@@ -91,8 +91,9 @@ export default class ActivityConcept {
 
   async promoteMemberToManager(_id: ObjectId, user: ObjectId, user_to_promote: ObjectId) {
     const activity = await this.getActivityById(_id);
-    await this.isManager(_id, user);
     await this.isMember(_id, user_to_promote);
+    await this.isNotManager(_id, user_to_promote); // Rather than throwing an error, might just do a soft error that does nothing
+    await this.isManager(_id, user);
     return await this.update(_id, { managers: activity.managers.concat(user_to_promote) });
   }
 
@@ -116,7 +117,7 @@ export default class ActivityConcept {
     const activity = await this.getActivityById(_id);
     const managers = activity.managers.filter((users) => users.toString() !== user_to_remove.toString());
     if (managers.length === 0) {
-      throw new BadValuesError("Removing this manager from the activity would leave the activity with no managers.  Promote a different member of the activity first");
+      throw new BadValuesError("Removing this manager from the activity would leave the activity with no managers.  Promote a different member of the activity first before removing this manager");
     }
     await this.update(_id, { managers: managers });
     await this.removeMemberFromActivity(_id, user_to_remove);
@@ -130,36 +131,51 @@ export default class ActivityConcept {
   }
 
   async delete(_id: ObjectId, user: ObjectId) {
-    await this.isCreator(_id, user);
+    await this.isManager(_id, user);
     await this.activities.deleteOne({ _id });
     return { msg: "Activity deleted successfully!" };
   }
 
-  async isCreator(_id: ObjectId, user: ObjectId, throw_error: boolean = true, check_opposite: boolean = false) {
+  async isCreator(_id: ObjectId, user: ObjectId, throw_error: boolean = true) {
     const activity = await this.getActivityById(_id);
-    let is_creator = activity.creator.toString() !== user.toString();
-    if (check_opposite) is_creator = !is_creator;
+    const is_creator = activity.creator.toString() !== user.toString();
     if (!throw_error) return is_creator;
     if (!is_creator) throw new ActivityCreatorNotMatchError(user, _id);
   }
 
-  async isManager(_id: ObjectId, user: ObjectId, throw_error: boolean = true, check_opposite: boolean = false) {
+  async isNotCreator(_id: ObjectId, user: ObjectId, throw_error: boolean = true) {
+    const is_not_creator = !this.isManager(_id, user, false);
+    if (!throw_error) return is_not_creator;
+    if (!is_not_creator) throw new NotAllowedError("This user is already a creator");
+  }
+
+  async isManager(_id: ObjectId, user: ObjectId, throw_error: boolean = true) {
     // if (activity instanceof ObjectId) {
     //   activity = await this.getActivityById(activity);
     // }
     const activity = await this.getActivityById(_id);
-    let is_manager = activity.managers.some((id) => id.toString() === user.toString());
-    if (check_opposite) is_manager = !is_manager;
+    const is_manager = activity.managers.some((id) => id.toString() === user.toString());
     if (!throw_error) return is_manager;
     if (!is_manager) throw new ActivityManagerNotMatchError(user, _id);
   }
 
-  async isMember(_id: ObjectId, user: ObjectId, throw_error: boolean = true, check_opposite: boolean = false) {
+  async isNotManager(_id: ObjectId, user: ObjectId, throw_error: boolean = true) {
+    const is_not_manager = !this.isManager(_id, user, false);
+    if (!throw_error) return is_not_manager;
+    if (!is_not_manager) throw new NotAllowedError("This user is already a manager");
+  }
+
+  async isMember(_id: ObjectId, user: ObjectId, throw_error: boolean = true) {
     const activity = await this.getActivityById(_id);
-    let is_member = activity.members.some((id) => id.toString() === user.toString());
-    if (check_opposite) is_member = !is_member;
+    const is_member = activity.members.some((id) => id.toString() === user.toString());
     if (!throw_error) return is_member;
     if (!is_member) throw new ActivityMemberNotMatchError(user, _id);
+  }
+
+  async isNotMember(_id: ObjectId, user: ObjectId, throw_error: boolean = true) {
+    const is_not_member = !this.isMember(_id, user, false);
+    if (!throw_error) return is_not_member;
+    if (!is_not_member) throw new NotAllowedError("This user is already a member");
   }
 
   // private sanitizeUpdate(update: Partial<ActivityDoc>) {

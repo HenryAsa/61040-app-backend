@@ -136,6 +136,30 @@ const operations: operation[] = [
     fields: { name: "input", join_code: "input" },
   },
   {
+    name: "Promote User in an Activity",
+    endpoint: "/api/activities/promote/:username",
+    method: "PATCH",
+    fields: { activity_name: "input", username: "input" },
+  },
+  {
+    name: "Demote a Manager in an Activity",
+    endpoint: "/api/activities/demote/:username",
+    method: "PATCH",
+    fields: { activity_name: "input", username: "input" },
+  },
+  {
+    name: "Kick a User from an Activity",
+    endpoint: "/api/activities/kick/:username",
+    method: "PATCH",
+    fields: { activity_name: "input", username_to_kick: "input" },
+  },
+  {
+    name: "Leave an Activity",
+    endpoint: "/api/activities/leave/:activity_name",
+    method: "PATCH",
+    fields: { activity_name: "input" },
+  },
+  {
     name: "Delete Activity",
     endpoint: "/api/activities/:id",
     method: "DELETE",

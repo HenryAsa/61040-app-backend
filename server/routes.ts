@@ -224,27 +224,62 @@ class Routes {
   async joinActivity(session: WebSessionDoc, name: string, join_code: string) {
     const user = WebSession.getUser(session);
     const activity = await Activity.getActivityByName(name);
+    const members = await Activity.addUserToActivity(activity._id, user, join_code);
     return {
-      msg: `You have been successfully added to the activity '${name}'`,
-      members: await Activity.addUserToActivity(activity._id, user, join_code),
+      msg: `User has been successfully added to the activity '${name}'`,
+      members: members,
     };
   }
 
-  @Router.patch("/activities/promote/:id")
-  async promoteMemberInActivityById(session: WebSessionDoc, activity_id: ObjectId, user_to_promote: ObjectId) {
+  @Router.patch("/activities/promote/:username")
+  async promoteMemberInActivityByUsername(session: WebSessionDoc, activity_name: string, username: string) {
     const user = WebSession.getUser(session);
-    await Activity.promoteMemberToManager(activity_id, user, user_to_promote);
+    const activity = await Activity.getActivityByName(activity_name);
+    const user_to_promote = await User.getUserByUsername(username);
+    await Activity.promoteMemberToManager(activity._id, user, user_to_promote._id);
     return {
-      msg: `'${user_to_promote}' was successfully promoted to a Manager in the activity ${activity_id}'`,
-      managers: (await Activity.getActivityById(activity_id)).managers,
+      msg: `'${user_to_promote.username}' was successfully promoted to a Manager in the activity '${activity.name}'`,
+      managers: (await Activity.getActivityById(activity._id)).managers,
     };
+  }
+
+  @Router.patch("/activities/demote/:username")
+  async demoteManagerInActivityByUsername(session: WebSessionDoc, activity_name: string, username: string) {
+    const user = WebSession.getUser(session);
+    const activity = await Activity.getActivityByName(activity_name);
+    const user_to_demote = await User.getUserByUsername(username);
+    await Activity.promoteMemberToManager(activity._id, user, user_to_demote._id);
+    return {
+      msg: `'${user_to_demote.username}' was successfully demoted to a Member in the activity '${activity.name}'`,
+      managers: (await Activity.getActivityById(activity._id)).managers,
+    };
+  }
+
+  @Router.patch("/activities/kick/:username")
+  async kickMemberInActivityByUsername(session: WebSessionDoc, activity_name: string, username_to_kick: string) {
+    const user = WebSession.getUser(session);
+    const activity = await Activity.getActivityByName(activity_name);
+    const user_to_kick = await User.getUserByUsername(username_to_kick);
+    await Activity.kickUserFromActivity(activity._id, user, user_to_kick._id);
+    return {
+      msg: `'${user_to_kick.username}' was successfully kicked from the activity '${activity.name}'`,
+      managers: (await Activity.getActivityById(activity._id)).managers,
+    };
+  }
+
+  @Router.patch("/activities/leave/:activity_name")
+  async leaveActivity(session: WebSessionDoc, activity_name: string) {
+    const user = WebSession.getUser(session);
+    const activity = await Activity.getActivityByName(activity_name);
+    await Activity.removeManagerFromActivity(activity._id, user);
+    await Activity.removeMemberFromActivity(activity._id, user);
+    return { msg: `User '${user}' has successfully left the activity ${activity.name}'` };
   }
 
   @Router.patch("/activities/:_id")
   async updateActivity(session: WebSessionDoc, _id: ObjectId, update: Partial<ActivityDoc>) {
     const user = WebSession.getUser(session);
-    // WHY CAN'T I DO user._id?
-    await Activity.isManager(_id, user);
+    await Activity.isMember(_id, user);
     return await Activity.update(_id, update);
   }
 
