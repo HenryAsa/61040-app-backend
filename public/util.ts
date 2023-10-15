@@ -11,6 +11,7 @@ type operation = {
 };
 
 const operations: operation[] = [
+  // USER //
   {
     name: "Get Session User (logged in user)",
     endpoint: "/api/session",
@@ -53,6 +54,7 @@ const operations: operation[] = [
     method: "GET",
     fields: { username: "input" },
   },
+  // POSTS //
   {
     name: "Get Posts (empty for all)",
     endpoint: "/api/posts",
@@ -77,6 +79,7 @@ const operations: operation[] = [
     method: "DELETE",
     fields: { id: "input" },
   },
+  // LOCATION //
   {
     name: "Get Locations (empty for all)",
     endpoint: "/api/locations",
@@ -101,6 +104,7 @@ const operations: operation[] = [
     method: "DELETE",
     fields: { id: "input" },
   },
+  // ACTIVITIES //
   {
     name: "Get Activities (empty for all)",
     endpoint: "/api/activities",
@@ -132,17 +136,12 @@ const operations: operation[] = [
     fields: { name: "input", join_code: "input" },
   },
   {
-    name: "Promote User in an Activity",
-    endpoint: "/api/activities/promote/:id",
-    method: "PATCH",
-    fields: { name: "input", user_to_promote: "input" },
-  },
-  {
     name: "Delete Activity",
     endpoint: "/api/activities/:id",
     method: "DELETE",
     fields: { id: "input" },
   },
+  // COMMENTS //
   {
     name: "Get Comments (empty for all)",
     endpoint: "/api/comments",
