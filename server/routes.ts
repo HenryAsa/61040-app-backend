@@ -291,7 +291,16 @@ class Routes {
     return carpools;
   }
 
-  @Router.post("/carpool/:name")
+  @Router.get("/carpool")
+  async getCarpoolsInTargetByName(session: WebSessionDoc, target_name: string) {
+    const user = WebSession.getUser(session);
+    const _, activity = await Activity.getActivityByName(target_name);
+    await Activity.isMember(user);
+    const carpools = await Carpool.getCarpoolsInTargetId(activity.activity._id);
+    return carpools;
+  }
+
+  @Router.get("/carpool/:name")
   async getCarpoolByName(name: string) {
     const carpool = await Carpool.getCarpoolsByName(name);
     return { msg: carpool.msg, carpool: carpool.carpool };
