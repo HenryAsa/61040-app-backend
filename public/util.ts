@@ -111,7 +111,13 @@ const operations: operation[] = [
     name: "Create Activity",
     endpoint: "/api/activities",
     method: "POST",
-    fields: { name: "input" },
+    fields: { name: "input", join_code: "input" },
+  },
+  {
+    name: "Join an Activity",
+    endpoint: "/api/activities/join/:name",
+    method: "PATCH",
+    fields: { name: "input", join_code: "input" },
   },
   {
     name: "Search for an Activity By Name",
