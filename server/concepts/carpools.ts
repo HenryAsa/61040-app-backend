@@ -31,8 +31,8 @@ export default class CarpoolConcept {
     return carpools;
   }
 
-  async getCarpoolsByName(name: string) {
-    const carpool = await this.carpools.readMany({ name: name });
+  async getCarpoolByName(name: string) {
+    const carpool = await this.carpools.readOne({ name: name });
     if (carpool === null) {
       throw new NotFoundError(`Carpool with the name '${name}' was not found!`);
     }
@@ -60,6 +60,15 @@ export default class CarpoolConcept {
     this.sanitizeUpdate(update);
     await this.carpools.updateOne({ _id }, update);
     return { msg: "Carpool successfully updated!" };
+  }
+
+  async addUserToCarpool(_id: ObjectId, user: ObjectId) {
+    const carpool = await this.getCarpoolById(_id);
+    if (carpool.members.some((id) => id.toString() === user.toString())) {
+      throw new NotAllowedError("User is already a member of this carpool");
+    }
+    await this.update(_id, { members: carpool.members.concat(user) });
+    return carpool.members;
   }
 
   async delete(_id: ObjectId, user: ObjectId) {

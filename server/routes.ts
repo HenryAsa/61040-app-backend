@@ -290,6 +290,109 @@ class Routes {
     return Activity.delete(_id, user); // CHANGE THIS TO ISMANAGER
   }
 
+  //// CARPOOLS ////
+
+  @Router.get("/carpools")
+  async getCarpools(driver?: string) {
+    let carpools;
+    if (driver) {
+      const id = (await User.getUserByUsername(driver))._id;
+      carpools = await Carpool.getCarpoolsByDriver(id);
+    } else {
+      carpools = await Carpool.getCarpools({});
+    }
+    return carpools;
+  }
+
+  @Router.get("/carpools/:name")
+  async getCarpoolByName(name: string) {
+    const carpool = await Carpool.getCarpoolByName(name);
+    return { msg: `Successfully retrieved the carpool '${name}'`, carpool: carpool };
+  }
+
+  @Router.get("/carpools/:id")
+  async getCarpoolById(id: ObjectId) {
+    const carpool = await Carpool.getCarpoolById(id);
+    return { msg: `Successfully retrieved the carpool '${id}'`, carpool: carpool };
+  }
+
+  @Router.post("/carpools")
+  async createCarpool(session: WebSessionDoc, name: string, target: ObjectId) {
+    const user = WebSession.getUser(session);
+    const carpool = await Carpool.create(user, name, target);
+    return { msg: carpool.msg, carpool: carpool.carpool };
+  }
+
+  @Router.patch("/carpools/join/:name")
+  async joinCarpool(session: WebSessionDoc, name: string) {
+    const user = WebSession.getUser(session);
+    const carpool = await Carpool.getCarpoolByName(name);
+    await Activity.isMember(carpool.target, user);
+    return {
+      msg: `User has been successfully added to the carpool '${name}'`,
+      members: await Carpool.addUserToCarpool(carpool._id, user),
+    };
+  }
+
+  // @Router.patch("/carpools/promote/:username")
+  // async promoteMemberInCarpoolByUsername(session: WebSessionDoc, carpool_name: string, username: string) {
+  //   const user = WebSession.getUser(session);
+  //   const carpool = await Carpool.getCarpoolByName(carpool_name);
+  //   const user_to_promote = await User.getUserByUsername(username);
+  //   await Carpool.promoteMemberToManager(carpool._id, user, user_to_promote._id);
+  //   return {
+  //     msg: `'${user_to_promote.username}' was successfully promoted to a Manager in the carpool '${carpool.name}'`,
+  //     managers: (await Carpool.getCarpoolById(carpool._id)).managers,
+  //   };
+  // }
+
+  // @Router.patch("/carpools/demote/:username")
+  // async demoteManagerInCarpoolByUsername(session: WebSessionDoc, carpool_name: string, username: string) {
+  //   const user = WebSession.getUser(session);
+  //   const carpool = await Carpool.getCarpoolByName(carpool_name);
+  //   const user_to_demote = await User.getUserByUsername(username);
+  //   await Carpool.promoteMemberToManager(carpool._id, user, user_to_demote._id);
+  //   return {
+  //     msg: `'${user_to_demote.username}' was successfully demoted to a Member in the carpool '${carpool.name}'`,
+  //     managers: (await Carpool.getCarpoolById(carpool._id)).managers,
+  //   };
+  // }
+
+  // @Router.patch("/carpools/kick/:username")
+  // async kickMemberInCarpoolByUsername(session: WebSessionDoc, carpool_name: string, username_to_kick: string) {
+  //   const user = WebSession.getUser(session);
+  //   const carpool = await Carpool.getCarpoolByName(carpool_name);
+  //   const user_to_kick = await User.getUserByUsername(username_to_kick);
+  //   await Carpool.kickUserFromCarpool(carpool._id, user, user_to_kick._id);
+  //   return {
+  //     msg: `'${user_to_kick.username}' was successfully kicked from the carpool '${carpool.name}'`,
+  //     managers: (await Carpool.getCarpoolById(carpool._id)).managers,
+  //   };
+  // }
+
+  // @Router.patch("/carpools/leave/:carpool_name")
+  // async leaveCarpool(session: WebSessionDoc, carpool_name: string) {
+  //   const user = WebSession.getUser(session);
+  //   const carpool = await Carpool.getCarpoolByName(carpool_name);
+  //   await Carpool.removeDriverFromCarpool(carpool._id, user);
+  //   await Carpool.removeDriveFromCarpool(carpool._id, user);
+  //   return { msg: `User '${user}' has successfully left the carpool ${carpool.name}'` };
+  // }
+
+  @Router.patch("/carpools/:_id")
+  async updateCarpool(session: WebSessionDoc, _id: ObjectId, update: Partial<CarpoolDoc>) {
+    const user = WebSession.getUser(session);
+    await Carpool.isMember(_id, user);
+    return await Carpool.update(_id, update);
+  }
+
+  @Router.delete("/carpools/:_id")
+  async deleteCarpool(session: WebSessionDoc, _id: ObjectId) {
+    const user = WebSession.getUser(session);
+    await Carpool.isDriver(_id, user);
+    return Carpool.delete(_id, user);
+  }
+
   //// COMMENTS ////
 
   @Router.get("/comments")
@@ -337,55 +440,6 @@ class Routes {
     const user = WebSession.getUser(session);
     await Comment.isAuthor(user, _id);
     return Comment.delete(_id);
-  }
-
-  // //// CARPOOLS ////
-
-  @Router.get("/carpool")
-  async getCarpools(creator?: string) {
-    let carpools;
-    if (creator) {
-      const id = (await User.getUserByUsername(creator))._id;
-      carpools = await Carpool.getCarpoolsByDriver(id);
-    } else {
-      carpools = await Carpool.getCarpools({});
-    }
-    return carpools;
-  }
-
-  @Router.get("/carpool")
-  async getCarpoolsInTargetByName(session: WebSessionDoc, target_name: string) {
-    const user = WebSession.getUser(session);
-    const activity = await Activity.getActivityByName(target_name);
-    await Activity.isMember(activity._id, user);
-    const carpools = await Carpool.getCarpoolsInTargetId(activity._id);
-    return carpools;
-  }
-
-  @Router.get("/carpool/:name")
-  async getCarpoolByName(name: string) {
-    const carpool = await Carpool.getCarpoolsByName(name);
-    return { msg: carpool.msg, carpool: carpool.carpool };
-  }
-
-  @Router.post("/carpool")
-  async createCarpool(session: WebSessionDoc, name: string, target: ObjectId, options?: CarpoolOptions) {
-    const user = WebSession.getUser(session);
-    const carpool = await Carpool.create(user, name, target, options);
-    return { msg: carpool.msg, carpool: carpool.carpool };
-  }
-
-  @Router.patch("/carpool/:_id")
-  async updateCarpool(session: WebSessionDoc, _id: ObjectId, update: Partial<CarpoolDoc>) {
-    const user = WebSession.getUser(session);
-    await Carpool.isDriver(_id, user);
-    return await Carpool.update(_id, update);
-  }
-
-  @Router.delete("/carpool/:_id")
-  async deleteCarpool(session: WebSessionDoc, _id: ObjectId) {
-    const user = WebSession.getUser(session);
-    return Carpool.delete(_id, user); // CHANGE THIS TO IsDRIVER
   }
 }
 
