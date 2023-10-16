@@ -83,7 +83,7 @@ export default class ActivityConcept {
   async addUserToActivity(_id: ObjectId, user: ObjectId, join_code: string) {
     const activity = (await this.verifyJoinCode(_id, join_code)).activity;
     if (activity.members.some((id) => id.toString() === user.toString())) {
-      throw AlreadyMemberError;
+      throw new AlreadyMemberError(user, _id);
     }
     await this.update(_id, { members: activity.members.concat(user) });
     return activity.members;
@@ -91,15 +91,15 @@ export default class ActivityConcept {
 
   async promoteMemberToManager(_id: ObjectId, user: ObjectId, user_to_promote: ObjectId) {
     const activity = await this.getActivityById(_id);
+    await this.isManager(_id, user);
     await this.isMember(_id, user_to_promote);
     await this.isNotManager(_id, user_to_promote); // Rather than throwing an error, might just do a soft error that does nothing
-    await this.isManager(_id, user);
     return await this.update(_id, { managers: activity.managers.concat(user_to_promote) });
   }
 
   async demoteManagerToMember(_id: ObjectId, user: ObjectId, user_to_demote: ObjectId) {
-    const activity = await this.getActivityById(_id);
     await this.isManager(_id, user);
+    const activity = await this.getActivityById(_id);
     const managers = activity.managers.filter((users) => users.toString() !== user_to_demote.toString());
     await this.update(_id, { managers: managers });
     return { msg: `'${user_to_demote}' is no longer a manager of '${_id}'` };
