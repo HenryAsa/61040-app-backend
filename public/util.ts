@@ -165,6 +165,79 @@ const operations: operation[] = [
     method: "DELETE",
     fields: { id: "input" },
   },
+  // CARPOOLS //
+  {
+    name: "Get Carpools (empty for all)",
+    endpoint: "/api/carpools",
+    method: "GET",
+    fields: {},
+  },
+  {
+    name: "Search for a Carpool By Name",
+    endpoint: "/api/carpools/:name",
+    method: "GET",
+    fields: { name: "input" },
+  },
+  {
+    name: "Search for a Carpool By Target Id",
+    endpoint: "/api/carpools/:target_id",
+    method: "GET",
+    fields: { target_id: "input" },
+  },
+  {
+    name: "Search for a Carpool By Target Name",
+    endpoint: "/api/carpools/:target_name",
+    method: "GET",
+    fields: { target_name: "input" },
+  },
+  {
+    name: "Search for a Carpool By Id",
+    endpoint: "/api/carpools/:id",
+    method: "GET",
+    fields: { id: "input" },
+  },
+  {
+    name: "Create Carpool",
+    endpoint: "/api/carpools",
+    method: "POST",
+    fields: { name: "input", target: "input" },
+  },
+  {
+    name: "Join a Carpool",
+    endpoint: "/api/carpools/join/:name",
+    method: "PATCH",
+    fields: { name: "input" },
+  },
+  // {
+  //   name: "Promote User to Driver in a Carpool",
+  //   endpoint: "/api/carpools/promote/:username",
+  //   method: "PATCH",
+  //   fields: { carpool_name: "input", username: "input" },
+  // },
+  // {
+  //   name: "Demote a Driver in a Carpool",
+  //   endpoint: "/api/carpools/demote/:username",
+  //   method: "PATCH",
+  //   fields: { carpool_name: "input", username: "input" },
+  // },
+  // {
+  //   name: "Kick a User from a Carpool",
+  //   endpoint: "/api/carpools/kick/:username",
+  //   method: "PATCH",
+  //   fields: { carpool_name: "input", username: "input" },
+  // },
+  // {
+  //   name: "Leave a Carpool",
+  //   endpoint: "/api/carpools/leave/carpool_name",
+  //   method: "PATCH",
+  //   fields: { carpool_name: "input" },
+  // },
+  {
+    name: "Delete Carpool",
+    endpoint: "/api/carpools/:id",
+    method: "DELETE",
+    fields: { id: "input" },
+  },
   // COMMENTS //
   {
     name: "Get Comments (empty for all)",
