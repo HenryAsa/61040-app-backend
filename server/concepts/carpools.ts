@@ -11,7 +11,7 @@ export interface CarpoolDoc extends BaseDoc {
   name: string;
   target: ObjectId;
   members: Array<ObjectId>;
-  driver: ObjectId;
+  drivers: Array<ObjectId>;
   options: CarpoolOptions;
 }
 
@@ -20,7 +20,7 @@ export default class CarpoolConcept {
 
   async create(driver: ObjectId, name: string, target: ObjectId, options?: CarpoolOptions) {
     await this.canCreate(name);
-    const _id = await this.carpools.createOne({ driver: driver, name: name, target: target, options: options });
+    const _id = await this.carpools.createOne({ drivers: [driver], name: name, target: target, options: options });
     return { msg: `Carpool '${name}' was successfully created!`, carpool: await this.carpools.readOne({ _id }) };
   }
 
@@ -36,8 +36,16 @@ export default class CarpoolConcept {
     if (carpool === null) {
       throw new NotFoundError(`Carpool with the name '${name}' was not found!`);
     }
-    return { msg: `Retrieved the carpool '${name}'!`, carpool: carpool };
+    return carpool;
     // return this.sanitizeCarpool(carpool);
+  }
+
+  async getCarpoolById(_id: ObjectId) {
+    const carpool = await this.carpools.readOne({ _id: _id });
+    if (carpool === null) {
+      throw new NotFoundError(`Carpool with the id '${_id}' was not found!`);
+    }
+    return carpool;
   }
 
   async getCarpoolsInTargetId(target: ObjectId) {
@@ -64,30 +72,33 @@ export default class CarpoolConcept {
     return { msg: "Carpool deleted successfully!" };
   }
 
-  async isDriver(_id: ObjectId, user: ObjectId) {
-    const carpool = await this.carpools.readOne({ _id });
-    if (!carpool) {
-      throw new NotFoundError(`Carpool '${_id}' does not exist!`);
-    }
-    if (carpool.driver.toString() !== user.toString()) {
-      // if (carpool.creator.id !== user.id) {
-      // if (carpool.creator !== user) {
-      console.log(carpool, carpool.driver, user, user.id);
-      throw new CarpoolDriverNotMatchError(user, _id);
-    }
+  async isDriver(_id: ObjectId, user: ObjectId, throw_error: boolean = true) {
+    // if (carpool instanceof ObjectId) {
+    //   carpool = await this.getCarpoolById(carpool);
+    // }
+    const carpool = await this.getCarpoolById(_id);
+    const is_driver = carpool.drivers.some((id) => id.toString() === user.toString());
+    if (!throw_error) return is_driver;
+    if (!is_driver) throw new NotAllowedError("This user is already a driver");
   }
 
-  async isMember(_id: ObjectId, user: ObjectId) {
-    const carpool = await this.carpools.readOne({ _id });
-    if (!carpool) {
-      throw new NotFoundError(`Carpool '${_id}' does not exist!`);
-    }
-    if (!carpool.members.includes(user)) {
-      // if (carpool.creator.id !== user.id) {
-      // if (carpool.creator !== user) {
-      console.log(carpool, carpool.driver, user, user.id);
-      throw new CarpoolMemberNotMatchError(user, _id);
-    }
+  async isNotDriver(_id: ObjectId, user: ObjectId, throw_error: boolean = true) {
+    const is_not_driver = !this.isDriver(_id, user, false);
+    if (!throw_error) return is_not_driver;
+    if (!is_not_driver) throw new NotAllowedError("This user is not a drive");
+  }
+
+  async isMember(_id: ObjectId, user: ObjectId, throw_error: boolean = true) {
+    const carpool = await this.getCarpoolById(_id);
+    const is_member = carpool.members.some((id) => id.toString() === user.toString());
+    if (!throw_error) return is_member;
+    if (!is_member) throw new CarpoolMemberNotMatchError(user, _id);
+  }
+
+  async isNotMember(_id: ObjectId, user: ObjectId, throw_error: boolean = true) {
+    const is_not_member = !this.isMember(_id, user, false);
+    if (!throw_error) return is_not_member;
+    if (!is_not_member) throw new NotAllowedError("This user is already a member");
   }
 
   private sanitizeUpdate(update: Partial<CarpoolDoc>) {
