@@ -213,6 +213,21 @@ class Routes {
     return { msg: `Successfully retrieved the activity '${id}'`, activity: activity };
   }
 
+  // @Router.get("/activities/members")
+  // async getActivitiesUserIsMemberOf(session: WebSessionDoc) {
+  //   console.log("HERE");
+  //   const user = WebSession.getUser(session);
+  //   const activities = await Activity.getActivitiesByMemberId(user);
+  //   return { msg: `Successfully retrieved the activities the current user is a member of`, activities: activities };
+  // }
+
+  // @Router.get("/activities/members/:username")
+  // async getActivitiesByMemberUsername(username: string) {
+  //   const user = await User.getUserByUsername(username);
+  //   const activities = await Activity.getActivitiesByMemberId(user._id);
+  //   return { msg: `Successfully retrieved the activities ${user.username} is a member of`, activities: activities };
+  // }
+
   @Router.post("/activities")
   async createActivity(session: WebSessionDoc, name: string, join_code: string, options?: ActivityOptions) {
     const user = WebSession.getUser(session);
