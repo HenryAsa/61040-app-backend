@@ -7,6 +7,9 @@
     "build": "tsc && copyfiles public/*.html public/*.css public/favicon.ico dist/",
     "watch": "npm run build && concurrently \"tsc -w\" \"nodemon -r source-map-support/register dist/api/index.js\"",
     "start": "npm run build && node -r source-map-support/register dist/api/index.js",
+    "build:server": "tsc -p server/tsconfig.json && copyfiles public/*.html public/*.css public/favicon.ico dist/",
+    "start:server": "npm run build:server && node -r source-map-support/register dist-server/api/index.js",
+    "dev:server": "npm run build:server && concurrently \"tsc -p server/tsconfig.json -w\" \"nodemon -r source-map-support/register dist-server/api/index.js\"",
     "lint": "npx eslint . --ext .ts && npx prettier . --check",
     "format": "npx eslint . --ext .ts --fix && npx prettier . --write"
   },

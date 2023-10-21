@@ -100,7 +100,7 @@ const operations: operation[] = [
   },
   {
     name: "Delete Location",
-    endpoint: "/api/locations/:id",
+    endpoint: "/api/locations/id/:id",
     method: "DELETE",
     fields: { id: "input" },
   },
@@ -117,21 +117,21 @@ const operations: operation[] = [
     method: "GET",
     fields: { name: "input" },
   },
-  // {
-  //   name: "Get Activities Logged In User is a Member Of",
-  //   endpoint: "/api/activities/members",
-  //   method: "GET",
-  //   fields: {},
-  // },
-  // {
-  //   name: "Get Activities a User is a Member Of",
-  //   endpoint: "/api/activities/members/:username",
-  //   method: "GET",
-  //   fields: { username: "input" },
-  // },
+  {
+    name: "Get Activities Logged In User is a Member Of",
+    endpoint: "/api/activities/members/",
+    method: "GET",
+    fields: {},
+  },
+  {
+    name: "Get Activities a User is a Member Of",
+    endpoint: "/api/members/:username",
+    method: "GET",
+    fields: { username: "input" },
+  },
   {
     name: "Search for an Activity By Id",
-    endpoint: "/api/activities/:id",
+    endpoint: "/api/activities/id/:id",
     method: "GET",
     fields: { id: "input" },
   },
