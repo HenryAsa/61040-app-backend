@@ -39,7 +39,7 @@
     "express-session": "^1.17.3",
     "mongodb": "^6.3.0",
     "morgan": "^1.10.0",
-    "reflect-metadata": "^0.1.13"
+    "reflect-metadata": "^0.2.1"
   },
   "prettier": {
     "trailingComma": "all",
